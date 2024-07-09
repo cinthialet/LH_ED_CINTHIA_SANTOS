@@ -1,84 +1,116 @@
-# Indicium Tech Code Challenge
+## Veja meus projetos similares ao desafio :D
 
-Code challenge for Software Developer with focus in data projects.
+> Acesse **[aqui](https://acesse.one/datalake-linkedin)** para ver a demonstração de um dos meus projetos similar ao caso de estudo, feito na cloud AWS - Datalake e Data warehouse com pipeline automatizada com Glue Workflow.
 
+# Desafio de Data Engineering do Programa LIGHTHOUSE
 
-## Context
+## Introdução
 
-At Indicium we have many projects where we develop the whole data pipeline for our client, from extracting data from many data sources to loading this data at its final destination, with this final destination varying from a data warehouse for a Business Intelligency tool to an api for integrating with third party systems.
+Neste desafio, desenvolvi um pipeline para extrair dados diariamente de um banco de dados `northwind` no PostgreSQL e de um arquivo CSV. O banco de dados Northwind não contém a tabela `order_details`, representada pelo arquivo CSV fornecido. O pipeline grava os dados extraídos no disco local e, em seguida, carrega-os em um novo banco de dados no PostgreSQL (`processed-northwind`) que eu criei, junto com as tabelas necessárias para receber os dados.
 
-As a software developer with focus in data projects your mission is to plan, develop, deploy, and maintain a data pipeline.
+O objetivo final é combinar os pedidos (`orders` do PostgreSQL) com seus detalhes (`order_details` do CSV) em uma consulta unificada.
 
+## Ferramentas Utilizadas
 
-## The Challenge
+Para completar este desafio, utilizei as seguintes ferramentas integradas:
 
-We are going to provide 2 data sources, a PostgreSQL database and a CSV file.
+- **Meltano e Airflow**: Meltano foi usado para gerenciar a extração e carga de dados das fontes, enquanto o Airflow orquestrou e agendou as tarefas do pipeline.
+- **Docker, Docker-compose e PostgreSQL**: O Postgres foi implementado dentro de um container docker, e orquestrado usando o docker-compose.
 
-The CSV file represents details of orders from an ecommerce system.
+## Preparação do Ambiente e Instalação
 
-The database provided is a sample database provided by microsoft for education purposes called northwind, the only difference is that the **order_detail** table does not exists in this database you are beeing provided with. This order_details table is represented by the CSV file we provide.
+### Parte 1: Fork e Clone
 
-Schema of the original Northwind Database: 
+Foi feito o fork do repositório do desafio e depois o clone para o ambiente local.
 
-![image](https://user-images.githubusercontent.com/49417424/105997621-9666b980-608a-11eb-86fd-db6b44ece02a.png)
+### Parte 2: Criação de Dois Ambientes Virtuais
 
-Your challenge is to build a pipeline that extracts the data everyday from both sources and write the data first to local disk, and second to a PostgreSQL database. For this challenge, the CSV file and the database will be static, but in any real world project, both data sources would be changing constantly.
+**Motivo:** Devido a conflitos de dependências entre o Airflow e o Meltano, foi necessário configurar ambientes virtuais separados para garantir a compatibilidade das bibliotecas .
 
-Its important that all writing steps (writing data from inputs to local filesystem and writing data from local filesystem to PostgreSQL database) are isolated from each other, you shoud be able to run any step without executing the others.
+- Conflito entre as versões necessárias do SQLAlchemy para ambas as ferramentas:
+  > ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.limits 3.7.0 requires packaging<24,>=21, but you have packaging 24.1 which is incompatible.apache-airflow 2.8.1 requires sqlalchemy<2.0,>=1.4.28, but you have sqlalchemy 2.0.31 which is incompatible.flask-appbuilder 4.3.10 requires SQLAlchemy<1.5, but you have sqlalchemy 2.0.31 which is incompatible.
 
-For the first step, where you write data to local disk, you should write one file for each table. This pipeline will run everyday, so there should be a separation in the file paths you will create for each source(CSV or Postgres), table and execution day combination, e.g.:
+**Criando e ativando o ambiente - Meltano:**
 
-```
-/data/postgres/{table}/2024-01-01/file.format
-/data/postgres/{table}/2024-01-02/file.format
-/data/csv/2024-01-02/file.format
-```
+python3 -m venv meltano_venv
 
-You are free to chose the naming and the format of the file you are going to save.
+source meltano_venv/bin/activate
 
-At step 2, you should load the data from the local filesystem, which you have created, to the final database.
+**Criando e ativando o ambiente -Airflow:**
 
-The final goal is to be able to run a query that shows the orders and its details. The Orders are placed in a table called **orders** at the postgres Northwind database. The details are placed at the csv file provided, and each line has an **order_id** field pointing the **orders** table.
+python3 -m venv airflow_venv
 
-## Solution Diagram
+source airflow_venv/bin/activate
 
-As Indicium uses some standard tools, the challenge was designed to be done using some of these tools.
+### Parte 3: Instalação do Meltano e Airflow com PIP em seus respectivos ambientes virtuais
 
-The following tools should be used to solve this challenge.
+pip install meltano==3.4.2
 
-Scheduler:
-- [Airflow](https://airflow.apache.org/docs/apache-airflow/stable/installation/index.html)
+pip install "apache-airflow[celery]==2.8.1" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.8.1/constraints-3.8.txt"
 
-Data Loader:
-- [Embulk](https://www.embulk.org) (Java Based)
-**OR**
-- [Meltano](https://docs.meltano.com/?_gl=1*1nu14zf*_gcl_au*MTg2OTE2NDQ4Mi4xNzA2MDM5OTAz) (Python Based)
+### Parte 4: Criação do projeto Meltano e instalação dos plugins
 
-Database:
-- [PostgreSQL](https://www.postgresql.org/docs/15/index.html)
+- Projeto: indicium_challenge
+- Plugins instalados:
+  - meltano add extractor tap-csv - Extrai dados de arquivos csv
+  - meltano add extractor tap-postgres - Extrai dados de um banco de dados no Postgres
+  - meltano add loader target-csv - Carrega dados para arquivos csv
+  - meltano add loader target-postgres - Carrega dados para um banco de dados no Postgres
 
-The solution should be based on the diagrams below:
-![image](docs/diagrama_embulk_meltano.jpg)
+### Parte 5: Instalação e Execução do Docker e docker-compose para subir os bancos de dados PostgreSQL em um container
 
+sudo docker-compose up -d
 
-### Requirements
+## Desenvolvendo o Projeto
 
-- You **must** use the tools described above to complete the challenge.
-- All tasks should be idempotent, you should be able to run the pipeline everyday and, in this case where the data is static, the output shold be the same.
-- Step 2 depends on both tasks of step 1, so you should not be able to run step 2 for a day if the tasks from step 1 did not succeed.
-- You should extract all the tables from the source database, it does not matter that you will not use most of them for the final step.
-- You should be able to tell where the pipeline failed clearly, so you know from which step you should rerun the pipeline.
-- You have to provide clear instructions on how to run the whole pipeline. The easier the better.
-- You must provide evidence that the process has been completed successfully, i.e. you must provide a csv or json with the result of the query described above.
-- You should assume that it will run for different days, everyday.
-- Your pipeline should be prepared to run for past days, meaning you should be able to pass an argument to the pipeline with a day from the past, and it should reprocess the data for that day. Since the data for this challenge is static, the only difference for each day of execution will be the output paths.
+### Configuração do Meltano
 
-### Things that Matters
+#### Configuração do extractor CSV e PostgreSQL:
 
-- Clean and organized code.
-- Good decisions at which step (which database, which file format..) and good arguments to back those decisions up.
-- The aim of the challenge is not only to assess technical knowledge in the area, but also the ability to search for information and use it to solve problems with tools that are not necessarily known to the candidate.
-- Point and click tools are not allowed.
+- Acessei o arquivo `meltano.yml` para realizar configurações diretamente.
+- Especifiquei entidades, paths de arquivos, keys e configurações de banco de dados dentro do `meltano.yml`.
+- Criação do novo banco de dados com as tabelas necessárias usando o script **[processed_northwind.sql](link-para-scrip-sql)**
 
+Essas configurações foram necessárias para definir claramente as fontes de dados e garantir que os dados sejam extraídos corretamente de cada fonte e carregados para o destino correto, além de conectar com o banco de dados corretamente.
 
-Thank you for participating!
+### Criação da DAG no Airflow
+
+O DAG foi configurado no Apache Airflow para operar em um ciclo diário, lidando com dados de diferentes fontes e organizando esses dados em uma estrutura de diretórios diariamente versionada. O script da DAG pode ser encontrado **[AQUI](link-python-dag)**
+
+Abaixo estão os principais passos e características do DAG:
+
+1. **Criação de Diretórios Diários:**
+
+   - A função `criar_pasta_data_atual` cria novos diretórios a cada execução diária para armazenar os dados extraídos do dia. Isso assegura que os dados de cada dia sejam mantidos de forma isolada e versionados pelo dia da execução da pipeline, permitindo um rastreamento fácil e uma organização clara baseada em datas.
+     - Ex: data/postgres-northwind/categories/2024-07-09/public-categories.csv
+
+2. **Listagem de Fontes de Dados:**
+
+   - A função `listar_fontes` identifica todas as fontes de dados disponíveis em um diretório específico, permitindo adaptar a pipeline a novas fontes de dados dinamicamente. No caso, tenho duas fontes - csv e postgres.
+
+3. **Configuração e Execução de Extratores Meltano:**
+
+   - Para cada fonte de dados identificada, o DAG configura e executa extratores específicos utilizando Meltano, armazenando os dados no diretório apropriado, versionado por data. Essa etapa assegura que cada fonte de dados é processada corretamente e seus dados são organizados de forma eficiente. Os comandos do meltano foram automatizados usando operadores BASH no DAG.
+
+4. **Escrita de Arquivo de Configuração JSON:**
+
+   - Após a extração, a função `criar_arquivo_configuracao` gera um arquivo de configuração JSON contendo os caminhos atualizados dos dados extraídos. Este arquivo é utilizado nas etapas subsequentes para referenciar corretamente os dados no processo de carga.
+
+5. **Configuração de Path de Destino com Meltano:**
+
+   - Define o path de destino para a etapa final de carga, assegurando que os dados consolidados sejam armazenados no local correto. Com isso, os dados são carregados do Postgres para o ambiente local, como determinado pelo step1 da pipeline.
+
+6. **Execução Final do Meltano para Carga no PostgreSQL:**
+   - Executa a tarefa final de ETL que consolida todos os dados extraídos e os carrega no PostgreSQL, completando o ciclo de ETL. Esta etapa garante que os dados estejam disponíveis para consultas e análises subsequentes. Com isso, os dados são carregados do ambiente local para o banco de dados no Postgres, como determinado pelo step2 da pipeline.
+
+Cada etapa da DAG foi planejada e implementada para assegurar a eficiência e a precisão do pipeline de dados. As funções principais foram implementadas utilizando operadores Python e Bash, com dependências definidas para garantir a execução sequencial e correta de cada etapa, além do **agendamento (schedule) de 1 dia para carga diária**, como determinado pelo problema.
+
+## **Resultado do case**
+
+O resultado, que é uma tabela consolidada dos pedidos (`orders`) com os detalhes do pedido (`orders_details`) pode ser encontrado nesse **[LINK](link-csv-resultado)**
+
+## Conclusão
+
+O projeto foi desafiador. Embora eu já tenha utilizado Docker, fui apresentada a muitas ferramentas novas e precisei recorrer a documentações extensivas. Encontrei problemas especialmente em relação ao Meltano. No entanto, ao final do projeto, fiquei muito satisfeita, pois foi um aprendizado significativo para minha jornada de desenvolvimento como engenheira de dados. Aprender a usar o Airflow foi particularmente valioso, demonstrando como orquestrar e automatizar pipelines de dados complexos.
+
+A integração das ferramentas Meltano e Airflow, juntamente com a utilização do Docker para isolar os ambientes dos bancos de dados PostgreSQL, mostrou-se essencial para a criação de um pipeline robusto. Consegui extrair dados diariamente, armazená-los no disco local e carregá-los em um banco de dados PostgreSQL de destino, demonstrando a eficiência e a escalabilidade da solução. Este projeto exemplificou o que o programa da LIGHTHOUSE oferece para desenvolver habilidades técnicas e práticas, reforçando minha capacidade de resolver problemas e aprender novas ferramentas rapidamente.
