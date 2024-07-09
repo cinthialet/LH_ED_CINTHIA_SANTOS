@@ -1,6 +1,6 @@
 ## Veja meus projetos similares ao desafio :D
 
-> Acesse **[aqui](https://acesse.one/datalake-linkedin](https://www.linkedin.com/feed/update/urn:li:activity:7135251028911751170/)** para ver a demonstração de um dos meus projetos similar ao caso de estudo, feito na cloud AWS - Datalake e Data warehouse com pipeline automatizada com Glue Workflow.
+> Acesse **[aqui](https://www.linkedin.com/posts/cinthialpsantos_datalake-datawarehouse-aws-activity-7135251028911751170-ThfD?utm_source=share&utm_medium=member_desktop)** para ver a demonstração de um dos meus projetos similar ao caso de estudo, feito na cloud AWS - Datalake e Data warehouse com pipeline automatizada com Glue Workflow.
 
 # Desafio de Data Engineering do Programa LIGHTHOUSE
 
