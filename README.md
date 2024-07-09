@@ -69,13 +69,13 @@ sudo docker-compose up -d
 
 - Acessei o arquivo `meltano.yml` para realizar configurações diretamente.
 - Especifiquei entidades, paths de arquivos, keys e configurações de banco de dados dentro do `meltano.yml`.
-- Criação do novo banco de dados com as tabelas necessárias usando o script **[processed_northwind.sql](link-para-scrip-sql)**
+- Criação do novo banco de dados com as tabelas necessárias usando o script **[processed_northwind.sql](https://github.com/cinthialet/LH_ED_CINTHIA_SANTOS/blob/main/data/processed_northwind.sql)**
 
 Essas configurações foram necessárias para definir claramente as fontes de dados e garantir que os dados sejam extraídos corretamente de cada fonte e carregados para o destino correto, além de conectar com o banco de dados corretamente.
 
 ### Criação da DAG no Airflow
 
-O DAG foi configurado no Apache Airflow para operar em um ciclo diário, lidando com dados de diferentes fontes e organizando esses dados em uma estrutura de diretórios diariamente versionada. O script da DAG pode ser encontrado **[AQUI](link-python-dag)**
+O DAG foi configurado no Apache Airflow para operar em um ciclo diário, lidando com dados de diferentes fontes e organizando esses dados em uma estrutura de diretórios diariamente versionada. O script da DAG pode ser encontrado **[AQUI](https://github.com/cinthialet/LH_ED_CINTHIA_SANTOS/blob/main/dags/indicium_challenge.py)**
 
 Abaixo estão os principais passos e características do DAG:
 
@@ -107,7 +107,7 @@ Cada etapa da DAG foi planejada e implementada para assegurar a eficiência e a 
 
 ## **Resultado do case**
 
-O resultado, que é uma tabela consolidada dos pedidos (`orders`) com os detalhes do pedido (`orders_details`) pode ser encontrado nesse **[LINK](link-csv-resultado)**
+O resultado, que é uma tabela consolidada dos pedidos (`orders`) com os detalhes do pedido (`orders_details`) pode ser encontrado nesse **[LINK](https://github.com/cinthialet/LH_ED_CINTHIA_SANTOS/blob/main/orders_ordersdetails.csv)**
 
 ## Conclusão
 
